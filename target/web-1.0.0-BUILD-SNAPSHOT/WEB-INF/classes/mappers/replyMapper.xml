@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.posep.mapper.ReplyMapper">
+
+
+   <select id="list" resultType="com.posep.domain.ReplyVO">
+
+      SELECT Q.TECH_ID, T.TECH_NAME, Q.MEM_ID, M.MEM_NAME, Q.QNA_NO, R.REPLY_NO,
+      R.REPLY_TEXT, R.REG_DATE
+      FROM REPLY R, QNA Q, MEMBER M, TECHNOLOGIST T
+      WHERE Q.QNA_NO = R.QNA_NO
+      AND R.MEM_ID = M.MEM_ID
+      AND R.TECH_ID = Q.TECH_ID
+      AND R.QNA_NO = #{qnaNo}
+      ORDER BY R.REPLY_NO DESC
+
+   </select>
+
+
+   <insert id="create" >
+
+      INSERT INTO REPLY( QNA_NO, REPLY_TEXT,
+      MEM_ID, REG_DATE, TECH_ID)
+      VALUES
+      (#{qnaNo}, #{replyText},
+      #{memId}, now(), #{techId})
+
+
+   </insert>
+
+
+   <!-- <update id="update"> UPDATE TBL_REPLY SET REPLY_TEXT = #{replyText} 
+      WHERE REPLY_NO = #{replyNo} </update> -->
+
+   <delete id="delete">
+      DELETE FROM REPLY
+      WHERE REPLY_NO = #{replyNo}
+   </delete>
+
+   <delete id="deleteAll">
+      DELETE FROM REPLY
+      WHERE QNA_NO = #{qnaNo}
+   </delete>
+
+
+   <!-- <resultMap id="ReplyVO" type="com.posep.mapper.ReplyVO"> <id property="replyNo" 
+      column="reply_no" /> <result property="qnaNo" column="qna_no" /> <result 
+      property="replyText" column="reply_text" /> <result property="replyWriter" 
+      column="reply_writer" /> <result property="regDate" column="regdate" /> <result 
+      property="updateDate" column="updatedate" /> </resultMap> <resultMap id="QnAResultMap" 
+      type="com.posep.mapper.QnAVO"> <id property="qnaNo" column="qna_no" /> <result 
+      property="qnaTitle" column="qna_title" /> <result property="qnaContents" 
+      column="qna_contents" /> <result property="userNo" column="user_no" /> <result 
+      property="regDate" column="regdate" /> <result property="hits" column="hits" 
+      /> </resultMap> -->
+
+</mapper>
+ 

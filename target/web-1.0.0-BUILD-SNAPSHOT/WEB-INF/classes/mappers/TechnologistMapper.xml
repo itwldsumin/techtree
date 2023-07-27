@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.posep.mapper.TechnologistMapper">
+
+
+	<!-- 게시물 등록 -->
+	<insert id="adcreate">
+		INSERT INTO TECHNOLOGIST
+		(TECH_ID
+		,TECH_PW
+		,TECH_NAME
+		,COMPANY
+		,TEL
+		,EMAIL
+		,ADDRESS
+		,EDUCATION
+		,VIDEO1
+		,VIDEO2
+		,VIDEO3
+		,MAJOR
+		,PERFORMANCE
+		,INTRO
+		,SCHEDULE
+		,CLASS3_NO
+		)
+		VALUES
+		(#{techId}
+		,#{techPW}
+		,#{techName}
+		,#{company}
+		,#{tel}
+		,#{email}
+		,#{address}
+		,#{education}
+		,#{video1}
+		,#{video2}
+		,#{video3}
+		,#{major}
+		,#{performance}
+		,#{intro}
+		,#{schedule}
+		,#{class3No}
+
+		)
+	</insert>
+
+
+	<select id="adread" resultType="com.posep.domain.TechnologistVO">
+
+		SELECT *
+		FROM TECHNOLOGIST
+		WHERE
+		TECH_ID =#{techId}
+
+	</select>
+
+
+
+	<!-- 수정 -->
+	<update id="adupdate">
+		UPDATE TECHNOLOGIST
+		SET
+		TECH_PW = #{techPW}
+		,TECH_NAME =
+		#{techName}
+		,COMPANY = #{company}
+		,TEL = #{tel}
+		,EMAIL = #{email}
+		,ADDRESS = #{address}
+		,EDUCATION = #{education}
+		,VIDEO1 = #{video1}
+		,VIDEO2 = #{video2}
+		,VIDEO3 = #{video3}
+		,MAJOR =
+		#{major}
+		,PERFORMANCE =
+		#{performance}
+		,INTRO = #{intro}
+		,SCHEDULE =
+		#{schedule}
+		,CLASS3_NO =
+		#{class3No}
+		WHERE
+		TECH_ID =
+		#{techId}
+	</update>
+
+
+	<!-- 게시물 삭제 -->
+	<delete id="addelete">
+		DELETE
+		FROM
+		TECHNOLOGIST
+		WHERE
+		TECH_ID = #{techId}
+	</delete>
+
+
+
+
+	<!-- 회원 기술인 상세보기 -->
+
+	<select id="read" resultType="com.posep.domain.TechnologistVO">
+
+		SELECT *
+		FROM TECHNOLOGIST
+		WHERE
+		TECH_ID =#{techId}
+
+	</select>
+
+
+
+	<!-- 5. 페이징을 위한 (조건에 맞는 or 전체) 게시물 개수 카운트 -->
+	<select id="countPaging" resultType="int">
+      <![CDATA[
+          SELECT 
+             COUNT(TECH_ID) 
+          FROM 
+             TECHNOLOGIST
+        
+      ]]>
+	</select>
+
+
+	<!-- 6. 제목 검색 -->
+	<sql id="search">
+
+		<if test="searchType != null">
+			<if test="searchType == 'ID'.toString()">
+				and TECH_ID like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'N'.toString()">
+				and TECH_NAME like CONCAT('%', #{keyword}, '%')
+			</if>
+
+		</if>
+	</sql>
+
+
+
+
+	<select id="listSearch"
+		resultType="com.posep.domain.TechnologistVO">
+<![CDATA[  
+ select TECH_ID, TECH_NAME, COMPANY, TEL, INTRO
+  from TECHNOLOGIST 
+   
+  
+]]>
+
+		<include refid="search"></include>
+
+
+<![CDATA[    
+  order by TECH_ID desc
+  limit #{pageStart}, #{perPageNum}
+]]>
+	</select>
+
+
+
+	<select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(TECH_ID) 
+  from TECHNOLOGIST 
+  
+]]>
+		<include refid="search"></include>
+
+	</select>
+
+	<select id="listAll"
+		resultType="com.posep.domain.TechnologistVO">
+
+		select TECH_ID, TECH_NAME, COMPANY, TEL, INTRO
+		from
+		TECHNOLOGIST
+	</select>
+
+	<!-- 팝업창 -->
+	<select id="listT" resultType="com.posep.domain.TechnologistVO">
+<![CDATA[
+SELECT TECH_ID, TECH_NAME, INTRO, VIDEO1, COMPANY, CLASS_3.CLASS3_NAME AS MAJOR
+		FROM  CLASS_3, TECHNOLOGIST
+		WHERE  TECHNOLOGIST.CLASS3_NO = CLASS_3.CLASS3_NO 
+		AND CLASS_3.CLASS3_NO = #{class3No}
+
+]]>
+	</select>
+	
+	
+	
+	<select id="login" resultType="com.posep.domain.TechnologistVO">
+      SELECT TECH_ID
+      , TECH_PW
+      ,TECH_NAME
+      , COMPANY
+      , TEL
+      , INTRO
+      FROM
+      TECHNOLOGIST
+      WHERE TECH_Id = #{memId}
+      AND TECH_PW = #{memPw}
+   </select>
+   
+   
+   
+   <select id="tMainConsultList" resultType="com.posep.domain.QnaVO">
+
+    <![CDATA[
+      SELECT
+      Q.QNA_NO,
+      Q.MEM_ID,
+      Q.TITLE,
+      Q.TYPE,
+      Q.CONTENTS,
+      Q.REGDATE,
+      Q.HOPEDATE,
+      Q.TECH_ID,
+      Q.CLASS3_NO,
+      T.TECH_NAME
+      FROM QNA Q, TECHNOLOGIST T
+      WHERE TYPE
+      = '협업'
+      AND Q.TECH_ID = #{techId}
+        AND Q.TECH_ID = T.TECH_ID
+
+      ORDER BY QNA_NO
+      DESC
+      limit 0,4
+]]>
+   </select>
+
+   <!-- 5. 회원 :: 대시보드 - 최근 협업 리스트 -->
+   <select id="tMainCooperList" resultType="com.posep.domain.QnaVO">
+    <![CDATA[
+
+        
+        SELECT
+        Q.QNA_NO,
+        Q.MEM_ID,
+      Q.TITLE,
+      Q.TYPE,
+      Q.CONTENTS,
+      Q.REGDATE,
+      Q.HOPEDATE,
+      Q.TECH_ID,
+      Q.CLASS3_NO,
+      T.TECH_NAME
+      FROM QNA Q, TECHNOLOGIST T
+      WHERE TYPE = '컨설팅'
+      AND Q.TECH_ID = #{techId}
+       AND Q.TECH_ID = T.TECH_ID
+
+      ORDER BY QNA_NO DESC
+      limit 0,4
+
+]]>
+   </select>
+
+
+
+
+</mapper>

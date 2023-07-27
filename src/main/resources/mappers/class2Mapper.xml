@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.posep.mapper.Class2Mapper">
+
+
+
+	<!-- 게시물 등록 -->
+	<insert id="adcreate" >
+		insert into CLASS_2 ( CLASS2_NO , CLASS2_NAME, CLASS2_CONTENTS,
+		CLASS1_NO)
+		values(
+		#{class2No},
+		#{class2Name},
+		#{class2Contents}, #{class1No})
+
+	</insert>
+	<!-- (SELECT CLASS1_NO FROM class_1 WHERE CLASS1_NAME = #{class1Name}) -->
+
+	<select id="adread" resultType="com.posep.domain.Class2VO">
+		SELECT CLASS_2.CLASS1_NO,
+		CLASS1_NAME, CLASS2_NO, CLASS2_NAME,
+		CLASS2_CONTENTS
+		FROM CLASS_1,
+		CLASS_2
+		WHERE CLASS_1.CLASS1_NO = CLASS_2.CLASS1_NO
+		AND
+		CLASS_2.CLASS2_NO = #{class2No}
+
+	</select>
+
+
+	<!-- 수정 -->
+	<update id="adupdate">
+		UPDATE
+		CLASS_2
+		SET CLASS2_NAME = #{class2Name},
+		CLASS2_CONTENTS = #{class2Contents}
+		WHERE
+		CLASS2_NO = #{class2No}
+	</update>
+
+
+
+	<!-- 게시물 삭제 -->
+	<delete id="addelete">
+		DELETE
+		FROM
+		CLASS_2
+		WHERE
+		CLASS2_NO = #{class2No}
+
+	</delete>
+
+
+	<!-- 5. 페이징을 위한 (조건에 맞는 or 전체) 게시물 개수 카운트 -->
+	<select id="countPaging" resultType="int">
+      <![CDATA[
+          SELECT 
+             COUNT(CLASS2_NO) 
+          FROM 
+             CLASS_2
+         WHERE 
+            CLASS2_NO >= 0  
+      ]]>
+	</select>
+
+
+	<!-- 6. 제목 검색 -->
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'na2'.toString()">
+				and CLASS2_NAME like CONCAT('%', #{keyword}, '%')
+
+			</if>
+			<if test="searchType == 'na1'.toString()">
+				and CLASS1_NAME like CONCAT('%', #{keyword}, '%')
+			</if>
+		</if>
+	</sql>
+
+
+
+
+	<select id="listSearch" resultType="com.posep.domain.Class2VO">
+<![CDATA[  
+ select CLASS_1.CLASS1_NO, CLASS_1.CLASS1_NAME, CLASS_2.CLASS2_NO, CLASS_2.CLASS2_NAME, CLASS_2.CLASS2_CONTENTS
+  from CLASS_1, CLASS_2 
+  where CLASS_1.CLASS1_NO = CLASS_2.CLASS1_NO
+
+  
+]]>
+
+		<include refid="search"></include>
+
+
+<![CDATA[    
+  order by CLASS2_NO desc
+  limit #{pageStart}, #{perPageNum}
+]]>
+	</select>
+
+
+
+	<select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(CLASS2_NO) 
+  from CLASS_2 
+
+  
+ 
+  
+]]>
+		<include refid="search"></include>
+
+	</select>
+
+	<select id="listClass2" resultType="com.posep.domain.Class2VO">
+
+		SELECT CLASS_1.CLASS1_NAME, CLASS_1.CLASS1_NO, CLASS_2.CLASS2_NO,CLASS_2.CLASS2_NAME 
+		FROM CLASS_2, CLASS_1
+		WHERE CLASS_2.CLASS1_NO=CLASS_1.CLASS1_NO
+
+
+	</select>
+
+
+	<!-- 팝업창 -->
+	<select id="list2" resultType="com.posep.domain.Class2VO">
+<![CDATA[
+    SELECT CLASS_1.CLASS1_NO, CLASS_2.CLASS2_NO, CLASS_2.CLASS2_NAME 
+	FROM CLASS_1 , CLASS_2 
+	WHERE CLASS_1.CLASS1_NO =CLASS_2.CLASS1_NO
+	AND CLASS_1.CLASS1_NO = #{class1No}  
+  
+]]>
+	</select>
+	
+	
+		<!-- 중복체크  -->
+   <select id="checkClass2No" resultType="int">
+      SELECT COUNT(*)
+      FROM CLASS_2
+      WHERE CLASS2_NO = #{class2No}
+   </select>
+
+
+</mapper>

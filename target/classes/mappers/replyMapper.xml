@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.posep.mapper.ReplyMapper">
+
+
+   <select id="list" resultType="com.posep.domain.ReplyVO">
+      SELECT R.REPLY_TEXT, R.REG_DATE, R.QNA_NO, R.REPLY_NO, R.MEM_ID, R.TECH_ID, ifnull(M.MEM_NAME, '') as MEM_NAME, T.TECH_NAME
+        FROM REPLY R
+        LEFT OUTER JOIN MEMBER M ON R.MEM_ID = M.MEM_ID
+        LEFT OUTER JOIN TECHNOLOGIST T ON R.TECH_ID = T.TECH_ID
+       WHERE R.QNA_NO = #{qnaNo}
+       ORDER BY R.REPLY_NO DESC
+   </select>
+
+
+   <insert id="create" >
+
+      INSERT INTO REPLY( QNA_NO, REPLY_TEXT,
+      MEM_ID, REG_DATE, TECH_ID)
+      VALUES
+      (#{qnaNo}, #{replyText},
+      #{memId}, now(), #{techId})
+
+
+   </insert>
+
+
+   <!-- <update id="update"> UPDATE TBL_REPLY SET REPLY_TEXT = #{replyText} 
+      WHERE REPLY_NO = #{replyNo} </update> -->
+
+   <delete id="delete">
+      DELETE FROM REPLY
+      WHERE REPLY_NO = #{replyNo}
+   </delete>
+
+   <delete id="deleteAll">
+      DELETE FROM REPLY
+      WHERE QNA_NO = #{qnaNo}
+   </delete>
+
+
+
+</mapper>
+ 

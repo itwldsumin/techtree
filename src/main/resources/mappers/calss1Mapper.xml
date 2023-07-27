@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.posep.mapper.Class1Mapper">
+
+
+	<!-- 게시물 등록 -->
+	<insert id="adcreate">
+		INSERT INTO CLASS_1
+		(CLASS1_NO,
+		CLASS1_NAME,
+		CLASS1_CONTENTS)
+		VALUES
+		(#{class1No},
+		#{class1Name},
+		#{class1Contents} )
+	</insert>
+
+
+	<select id="adread" resultType="com.posep.domain.Class1VO">
+
+		SELECT *
+		FROM CLASS_1
+		WHERE
+		CLASS1_NO =#{class1No}
+
+	</select>
+
+
+
+	<!-- 수정 -->
+	<update id="adupdate">
+		UPDATE CLASS_1
+		SET 
+		CLASS1_NAME = #{class1Name},
+		CLASS1_CONTENTS = #{class1Contents}
+		WHERE
+		CLASS1_NO = #{class1No}
+	</update>
+
+
+	<!-- 게시물 삭제 -->
+	<delete id="addelete">
+		DELETE
+		FROM
+		CLASS_1
+		WHERE
+		CLASS1_NO = #{class1No}
+	</delete>
+
+
+	<!-- 5. 페이징을 위한 (조건에 맞는 or 전체) 게시물 개수 카운트 -->
+	<select id="countPaging" resultType="int">
+      <![CDATA[
+          SELECT 
+             COUNT(CLASS1_NO) 
+          FROM 
+             CLASS_1
+
+      ]]>
+	</select>
+
+
+	<!-- 6. 제목 검색 -->
+	<sql id="search">
+
+		<if test="searchType != null">
+			<if test="searchType == 'na1'.toString()">
+				and CLASS1_NAME like CONCAT('%', #{keyword}, '%')
+			</if>
+
+		</if>
+	</sql>
+
+
+
+
+	<select id="listSearch" resultType="com.posep.domain.Class1VO">
+<![CDATA[  
+ select CLASS1_NO, CLASS1_NAME, CLASS1_CONTENTS
+  from CLASS_1 
+   
+  
+]]>
+
+		<include refid="search"></include>
+
+
+<![CDATA[    
+  order by CLASS1_NO desc
+  limit #{pageStart}, #{perPageNum}
+]]>
+	</select>
+
+
+
+	<select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(CLASS1_NO) 
+  from CLASS_1 
+
+]]>
+		<include refid="search"></include>
+
+	</select>
+
+
+	<select id="listClass1" resultType="com.posep.domain.Class1VO">
+
+		SELECT *
+		FROM CLASS_1
+
+	</select>
+	
+	
+  <!--  팝업창 -->
+   <select id="list1" resultType="com.posep.domain.Class1VO">
+<![CDATA[
+      SELECT 
+        *
+      FROM  CLASS_1
+      WHERE CLASS1_NO NOT IN (SELECT CLASS1_NO FROM CLASS_1 where CLASS1_NO = #{class1No})
+  
+      ORDER BY CLASS1_NO
+]]>
+   </select>
+   
+      <select id="checkClass1No" resultType="int">
+      SELECT COUNT(*)
+      FROM CLASS_1
+      WHERE CLASS1_NO = #{class1No}
+   </select>
+
+</mapper>

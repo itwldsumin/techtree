@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.posep.mapper.MemberMapper">
+
+
+   
+   <!-- 1. 로그인 -->
+   <select id="login" resultType="com.posep.domain.MemberVO">
+      SELECT MEM_ID
+      , MEM_PW
+      , MEM_NAME
+      , COMPANY
+      , TEL
+      , EMAIL
+      , ADDRESS
+      , HOW
+      , GOAL
+      , AUTHORITY
+      FROM
+      MEMBER
+      WHERE MEM_Id = #{memId}
+      AND MEM_PW = #{memPw}
+   </select>
+
+
+   <!-- 2. 회원 :: 회원가입 -->
+   <insert id="insert">
+      INSERT INTO
+      MEMBER( MEM_ID, MEM_PW, MEM_NAME,
+      COMPANY,
+      TEL, EMAIL, ADDRESS, HOW, GOAL, AUTHORITY
+      )
+      VALUES(
+      #{memId}, #{memPw},
+      #{memName}, #{company}, #{tel},
+      #{email},#{address},#{how}, #{goal},
+      #{authority})
+   </insert>
+
+
+
+   <!-- 회원가입 - 학번 중복검사 AJAX. -->
+   <select id="checkMemId" resultType="int">
+      SELECT COUNT(*)
+      FROM MEMBER
+      WHERE MEM_ID = #{memId}
+
+   </select>
+   
+
+
+   <!-- 4. 회원 :: 대시보드 - 최근 컨설팅 리스트 -->
+   <select id="mainConsultList" resultType="com.posep.domain.QnaVO">
+
+    <![CDATA[
+      SELECT
+      Q.QNA_NO,
+      Q.MEM_ID,
+      Q.TITLE,
+      Q.TYPE,
+      Q.CONTENTS,
+      Q.REGDATE,
+      Q.HOPEDATE,
+      Q.TECH_ID,
+      Q.CLASS3_NO,
+      T.TECH_NAME
+      FROM QNA Q, TECHNOLOGIST T
+      WHERE TYPE
+      = '협업'
+      AND Q.MEM_ID = #{memId}
+      AND Q.TECH_ID = T.TECH_ID
+      ORDER BY QNA_NO
+      DESC
+      limit 0,4;
+]]>
+   </select>
+
+   <!-- 5. 회원 :: 대시보드 - 최근 협업 리스트 -->
+   <select id="mainCooperList" resultType="com.posep.domain.QnaVO">
+    <![CDATA[
+
+        
+        SELECT
+        Q.QNA_NO,
+        Q.MEM_ID,
+      Q.TITLE,
+      Q.TYPE,
+      Q.CONTENTS,
+      Q.REGDATE,
+      Q.HOPEDATE,
+      Q.TECH_ID,
+      Q.CLASS3_NO,
+      T.TECH_NAME
+      FROM QNA Q, TECHNOLOGIST T
+      WHERE TYPE = '컨설팅'
+      AND Q.MEM_ID = #{memId}
+      AND Q.TECH_ID = T.TECH_ID
+      ORDER BY QNA_NO DESC
+      limit 0,4;
+
+]]>
+   </select>
+
+
+   <!-- 6. 관리자 :: 대시보드 - 일반인 / 기업 / 기술인 수 -->
+   <select id="countMem" resultType="int">
+      SELECT COUNT(*) AS CNT FROM MEMBER
+      WHERE AUTHORITY = '일반회원'
+   </select>
+
+   <select id="countMem2" resultType="int">
+      SELECT COUNT(*) AS CNT FROM MEMBER
+      WHERE AUTHORITY = '기업회원'
+   </select>
+
+
+   <select id="countTech" resultType="int">
+      SELECT  COUNT(*) AS CNT FROM TECHNOLOGIST
+   </select>
+
+   <!--7. 관리자 :: 회원관리 - 목록 -->
+   <select id="list" resultType="com.posep.domain.MemberVO">
+      SELECT
+       MEM_ID
+      , MEM_PW
+      ,
+      MEM_NAME
+      , COMPANY
+      , TEL
+      , EMAIL
+      , ADDRESS
+      ,authority
+      FROM
+      MEMBER
+
+   </select>
+
+   <!-- 8. 관리자 & 회원 :: 회원관리 - 회원상세내역 -->
+
+   <select id="read" resultType="com.posep.domain.MemberVO">
+      SELECT MEM_ID
+      , MEM_NAME
+      ,
+      COMPANY
+      , TEL
+      , EMAIL
+      , ADDRESS
+      FROM
+      MEMBER
+      WHERE MEM_ID = #{memId}
+   </select>
+
+   <!-- 9. 관리자 :: 회원관리 - 회원 삭제 -->
+   <delete id="delete">
+      DELETE FROM MEMBER
+      WHERE MEM_ID = #{memId}
+   </delete>
+
+
+   <!-- 10. 내 정보 수정 -->
+   <update id="update">
+      UPDATE
+      SET  MEM_NAME = #{memName},
+      COMPANY = #{company}, TEL = #{tel} , EMAIL = #{email}
+      , ADDRESS =
+      #{address}
+      WHERE MEM_ID = #{memId}
+   </update>
+
+   <update id="pwupdate">
+      UPDATE
+      MEMBER
+      SET MEM_PW = #{memPw}
+      WHERE MEM_ID = #{memId}
+   </update>
+
+
+   <!-- 11. 페이징처리 -->
+   <!-- 12. 검색처리 -->
+
+
+
+   <!-- 5. 검색 -->
+   <!-- 인증항목 분류/영역/항목명/발행처로 키워드검색가능 -->
+
+   <sql id="search">
+      <if test="searchType != null">
+         <if test="searchType == 'uno'.toString()">and user_No like '%' || #{keyword} || '%' </if>
+         <if test="searchType == 'g'.toString()">and grade like '%' || #{keyword} || '%' </if>
+         <if test="searchType == 'un'.toString()">and user_Name like '%' || #{keyword} || '%' </if>
+         <if test="searchType == 's'.toString()">and state like '%' || #{keyword} || '%' </if>
+      </if>
+   </sql>
+
+
+
+
+
+
+   <!-- 키워드로 검색된 리스트 목록 불러오기 -->
+   <select id="listSearch" resultType="com.posep.domain.MemberVO">
+      <![CDATA[  
+   
+         SELECT  MEM_ID, MEM_NAME, COMPANY, AUTHORITY
+         FROM 
+            MEMBER
+            WHERE MEM_ID
+      ]]>
+
+
+      <include refid="search"></include>
+      <!-- search에 대한 SQL문을 삽입 -->
+ 
+  
+         
+      <![CDATA[    
+              ORDER BY MEM_ID DESC
+        limit #{pageStart}, #{perPageNum}
+      ]]>
+   </select>
+
+
+   <!-- 페이징처리를 위한 검색된 리스트 목록의 ROW의 수 계산 -->
+   <select id="listSearchCount" resultType="int">
+      <![CDATA[  
+        SELECT
+        count(MEM_ID) 
+        FROM
+        MEMBER 
+ 
+      ]]>
+      <include refid="search" />
+   </select>
+
+
+   <select id="countPaging" resultType="int">
+      <![CDATA[
+         SELECT 
+             COUNT(MEM_ID) 
+          FROM 
+             MEMBER
+        
+      ]]>
+   </select>
+
+
+</mapper>

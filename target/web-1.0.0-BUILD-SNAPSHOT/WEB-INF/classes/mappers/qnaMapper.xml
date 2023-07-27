@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.posep.mapper.QnaMapper">
+
+
+   <!-- 학생 :: QnA - 등록 -->
+   <insert id="create" >
+
+      INSERT INTO QNA(
+      MEM_ID,
+      TECH_ID,
+      TYPE,
+      TITLE,
+      HOPEDATE,
+      REGDATE,
+      CONTENTS,
+      CLASS3_NO
+      )
+      VALUES
+      (#{memId}, #{techId}, #{type}, #{title}, #{hopeDate}, now(), #{contents}, #{class3No}
+      )
+
+   </insert>
+
+
+
+
+   <!-- 수정 -->
+   <update id="update">
+      UPDATE QNA
+      SET
+      TYPE= #{type}
+      , TITLE = #{title}
+      , HOPEDATE = #{hopeDate}
+      , CONTENTS = #{contents}
+      , CLASS3_NO = #{class3No}
+      WHERE
+      QNA_NO = #{qnaNo}
+   </update>
+
+
+   <!-- 게시물 삭제 -->
+   <delete id="delete">
+      DELETE
+      FROM
+      QNA
+      WHERE
+      QNA_NO = #{qnaNo}
+   </delete>
+
+
+
+   <!-- 관리자 및 학생 :: QnA - 조회 -->
+   <select id="read" resultType="com.posep.domain.QnaVO">
+      SELECT
+      Q.QNA_NO,
+      Q.TITLE,
+      Q.TYPE,
+      Q.CONTENTS,
+      Q.REGDATE,
+      Q.HOPEDATE,
+      Q.MEM_ID,
+      Q.TECH_ID,
+      Q.CLASS3_NO,
+      M.MEM_NAME,
+      T.TECH_NAME,
+      T.EMAIL, 
+      T.SCHEDULE,
+      T.INTRO
+     
+     
+      FROM
+      QNA Q, MEMBER M, TECHNOLOGIST T
+      WHERE
+      Q.MEM_ID = M.MEM_ID
+      AND Q.TECH_ID = T.TECH_ID
+      AND Q.QNA_NO = #{qnaNo}
+
+   </select>
+
+
+
+
+   <!-- 5. 페이징을 위한 (조건에 맞는 or 전체) 게시물 개수 카운트 -->
+   <!-- <select id="countPaging" resultType="int">
+      <![CDATA[
+          SELECT 
+             COUNT(QNA_NO) 
+          FROM 
+             QNA
+        
+      ]]>
+   </select> -->
+
+
+   <!-- 6. 제목 검색 -->
+   <sql id="search">
+
+      <if test="searchType != null">
+         <if test="searchType == 'TYPE'.toString()">
+            and TYPE like '%' || #{keyword} || '%'
+         </if>
+
+      </if>
+   </sql>
+
+
+
+
+   <select id="listSearch" resultType="com.posep.domain.QnaVO">
+<![CDATA[  
+ SELECT
+        Q.MEM_ID,
+        Q.QNA_NO,
+      Q.TITLE,
+      Q.REGDATE,
+      Q.TYPE,
+      Q.CLASS3_NO,
+      T.TECH_NAME
+      FROM
+      QNA Q, TECHNOLOGIST T
+      WHERE QNA_NO > 0
+      AND Q.TECH_ID = T.TECH_ID
+       AND Q.MEM_ID = #{memId}
+   
+      
+   
+  
+]]>
+
+      <include refid="search"></include>
+
+
+<![CDATA[    
+  order by QNA_NO desc
+  limit #{pageStart}, #{perPageNum}
+]]>
+   </select>
+
+
+
+   <select id="listSearchCount" resultType="int">
+<![CDATA[  
+      SELECT 
+      COUNT(QNA_NO) 
+      FROM 
+      QNA
+  
+]]>
+      <include refid="search"></include>
+
+   </select>
+ 
+ 
+ 
+    <select id="mQListCount" resultType="int">
+<![CDATA[  
+      SELECT 
+      COUNT(QNA_NO) 
+      FROM 
+      QNA
+      WHERE MEM_ID = #{keyword}
+  
+]]>
+
+   </select>
+   
+      <select id="tQListCount" resultType="int">
+<![CDATA[  
+      SELECT 
+      COUNT(QNA_NO) 
+      FROM 
+      QNA
+      WHERE TECH_ID = #{keyword}
+  
+]]>
+
+   </select>
+ 
+ 
+<!--  11.04 회원이 쓴 것 만 보이게 하기 -->
+     <select id="mQList" resultType="com.posep.domain.QnaVO">
+        <![CDATA[ 
+      SELECT
+       Q.MEM_ID,
+        Q.QNA_NO,
+      Q.TITLE,
+      Q.REGDATE,
+      Q.TYPE,
+      Q.CLASS3_NO,
+      T.TECH_NAME
+      FROM
+      QNA Q, TECHNOLOGIST T
+      WHERE QNA_NO > 0
+      AND Q.TECH_ID = T.TECH_ID
+       AND Q.MEM_ID = #{keyword}
+      order by QNA_NO desc 
+           ]]>
+   </select>
+   
+   <!--  11.04 기술인에게 쓰여진 문의글만 보이게 하기 -->
+     <select id="tQList" resultType="com.posep.domain.QnaVO">
+      <![CDATA[ 
+      SELECT
+       Q.MEM_ID,
+        Q.QNA_NO,
+      Q.TITLE,
+      Q.REGDATE,
+      Q.TYPE,
+      Q.CLASS3_NO,
+      T.TECH_NAME,
+      M.MEM_NAME
+      FROM
+      QNA Q, TECHNOLOGIST T, MEMBER M
+      WHERE QNA_NO > 0
+      AND Q.TECH_ID = #{keyword}
+       AND Q.MEM_ID = M.MEM_ID
+       AND Q.TECH_ID = T.TECH_ID
+      order by QNA_NO desc 
+      ]]>
+           
+   </select>
+
+</mapper>

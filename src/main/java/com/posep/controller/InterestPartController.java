@@ -1,0 +1,108 @@
+package com.posep.controller;
+
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+
+import com.posep.domain.Class3VO;
+import com.posep.domain.InterestPartVO;
+import com.posep.domain.MemberVO;
+
+import com.posep.service.Class3Service;
+import com.posep.service.InterestPartService;
+
+@Controller
+@RequestMapping("member/interestpart/*")
+public class InterestPartController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(InterestPartController.class);
+
+	@Inject
+	private InterestPartService service;
+
+	@Inject
+	private Class3Service service3;
+	
+	
+	
+	
+
+	// 1. 팝업창 -> 소분류 선택 팝업창 -> 소분류 검색 결과 페이지
+	@RequestMapping(value = "/searchClass3", method = RequestMethod.GET)
+	public void searchClass3(@RequestParam("class3Name") String class3Name, Model model) throws Exception {
+
+
+		List<Class3VO> searchClass3 = service.searchClass3(class3Name);
+
+		logger.info("searchClass3 : " + searchClass3.toString());
+		model.addAttribute("searchClass3", searchClass3);
+
+	}
+
+	// 2. 소분류 목록 팝업창
+	@RequestMapping(value = "/searchPopup", method = RequestMethod.GET)
+	public void searchPopup(@RequestParam("memId") String memId, Model model) throws Exception {
+		logger.info("saerchPopup......");
+		List<Class3VO> class3List = service.class3List(memId);
+		model.addAttribute("class3List", class3List);
+	}
+
+	// 3. 선택한 소분류 목록
+	@RequestMapping(value = "/interestpart", method = RequestMethod.GET)
+	public void interestPart(HttpServletRequest request, Model model) throws Exception {
+		HttpSession session = request.getSession();
+		MemberVO MemberVO = (MemberVO) session.getAttribute("login");
+		String memId = MemberVO.getMemId();
+
+		logger.info("show all list......");
+
+		model.addAttribute(service3.listAll());
+		model.addAttribute("listAll", service3.listAll());
+	}
+
+	// 4. 소분류 등록
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public void registerGET() throws Exception {
+
+		logger.info("register get ......");
+	}
+
+	// POST
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	public String registerPOST( InterestPartVO InterestPartVO, RedirectAttributes rttr) throws Exception {
+
+		logger.info("InterestPartVO Register POST .......");
+
+		logger.info("InterestPartVO : " + InterestPartVO);
+
+		service.register(InterestPartVO);
+
+		rttr.addFlashAttribute("msg", "처리 완료되었습니다.");
+
+		return "redirect:/member/myInfo";
+	}
+
+	
+
+	// 로그아웃 GET
+	@RequestMapping(value = "/InterestPartlogout", method = RequestMethod.GET)
+	public String logout(HttpSession session) throws Exception {
+
+		session.invalidate();
+
+		return "redirect:/member/myInfo";
+	}
+	
+}

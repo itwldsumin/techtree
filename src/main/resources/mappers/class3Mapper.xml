@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.posep.mapper.Class3Mapper">
+
+   <!-- 게시물 등록 -->
+   <insert id="adcreate" >
+      insert into CLASS_3 ( CLASS3_NO, CLASS3_NAME, CLASS3_CONTENTS,
+      CLASS2_NO)
+      values(
+      #{class3No},
+      #{class3Name},
+      #{class3Contents}, #{class2No})
+
+   </insert>
+
+   <select id="adread" resultType="com.posep.domain.Class3VO">
+      SELECT CLASS_2.CLASS1_NO,
+      CLASS1_NAME, CLASS_3.CLASS2_NO,
+      CLASS2_NAME,
+      CLASS3_NO, CLASS3_NAME,
+      CLASS3_CONTENTS
+      FROM CLASS_2, CLASS_3, CLASS_1
+      WHERE CLASS_2.CLASS2_NO =
+      CLASS_3.CLASS2_NO
+      AND CLASS_1.CLASS1_NO = CLASS_2.CLASS1_NO
+      AND CLASS_3.CLASS3_NO = #{class3No}
+
+   </select>
+
+
+   <!-- 수정 -->
+   <update id="adupdate">
+      UPDATE
+      CLASS_3
+      SET CLASS3_NAME = #{class3Name},
+      CLASS3_CONTENTS = #{class3Contents}
+      WHERE
+      CLASS3_NO = #{class3No}
+   </update>
+
+   <!-- 게시물 삭제 -->
+   <delete id="addelete">
+      DELETE
+      FROM
+      CLASS_3
+      WHERE
+      CLASS3_NO = #{class3No}
+
+   </delete>
+
+
+   <!-- listClass3 -->
+
+
+   <select id="listClass2" resultType="com.posep.domain.Class3VO">
+
+      SELECT *
+      FROM CLASS_3
+      WHERE
+      CLASS2_NO = #{class2No}
+
+   </select>
+
+
+
+
+
+
+   <!-- 5. 페이징을 위한 (조건에 맞는 or 전체) 게시물 개수 카운트 -->
+   <select id="countPaging" resultType="int">
+      <![CDATA[
+          SELECT 
+             COUNT(CLASS3_NO) 
+          FROM 
+             CLASS_3
+        
+      ]]>
+   </select>
+
+   <!-- 6. 제목 검색 -->
+   <sql id="search">
+      <if test="searchType != null">
+         <if test="searchType == 'na3'.toString()">
+            and CLASS3_NAME like CONCAT('%', #{keyword}, '%')
+
+         </if>
+         <if test="searchType == 'na2'.toString()">
+            and CLASS2_NAME like CONCAT('%', #{keyword}, '%')
+
+         </if>
+         <if test="searchType == 'na1'.toString()">
+            and CLASS1_NAME like CONCAT('%', #{keyword}, '%')
+         </if>
+      </if>
+   </sql>
+
+
+   <select id="listSearch" resultType="com.posep.domain.Class3VO">
+<![CDATA[  
+ select CLASS_1.CLASS1_NO, CLASS_1.CLASS1_NAME, CLASS_2.CLASS2_NO, CLASS_2.CLASS2_NAME, CLASS_3.CLASS3_NO, CLASS_3.CLASS3_NAME, CLASS_3.CLASS3_CONTENTS
+  from CLASS_2, CLASS_3, CLASS_1
+  where CLASS_2.CLASS1_NO = CLASS_1.CLASS1_NO
+  AND CLASS_2.CLASS2_NO = CLASS_3.CLASS2_NO
+  
+]]>
+
+      <include refid="search"></include>
+
+
+<![CDATA[    
+  order by CLASS3_NO asc
+  limit #{pageStart}, #{perPageNum}
+]]>
+   </select>
+
+
+
+   <select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(CLASS3_NO) 
+  from CLASS_3 
+ 
+  
+ 
+  
+]]>
+      <include refid="search"></include>
+
+   </select>
+
+
+
+
+
+   <!-- 모달창 -->
+   <select id="list3" resultType="com.posep.domain.Class3VO">
+<![CDATA[
+    SELECT CLASS_2.CLASS2_NO, CLASS_3.CLASS3_NO, CLASS_3.CLASS3_NAME 
+   FROM CLASS_2 , CLASS_3 
+   WHERE CLASS_2.CLASS2_NO =CLASS_3.CLASS2_NO
+   AND CLASS_2.CLASS2_NO = #{class2No}  
+  
+]]>
+   </select>
+
+	<!-- 중복체크  -->
+   <select id="checkClass3No" resultType="int">
+      SELECT COUNT(*)
+      FROM CLASS_3
+      WHERE CLASS3_NO = #{class3No}
+   </select>
+
+
+
+<!-- 팝업창 -->
+  <select id="listAll" resultType="com.posep.domain.Class3VO">
+<![CDATA[
+      SELECT 
+        CLASS3_NO, CLASS3_NAME, CLASS3_CONTENTS
+      FROM  CLASS_3
+]]>
+   </select>
+</mapper>
